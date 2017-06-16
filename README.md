@@ -1,5 +1,7 @@
 # jkob
 [![Build Status](https://travis-ci.org/soundvibe/jkob.svg)](https://travis-ci.org/soundvibe/jkob)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.soundvibe/jkob/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.soundvibe/jkob)
+
 ### Kotlin DSL for type-safe JSON building
 
 ##### An example to building JSON:
