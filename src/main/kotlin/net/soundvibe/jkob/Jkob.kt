@@ -6,38 +6,30 @@ package net.soundvibe.jkob
 
 sealed class JsonValue {
 
-    inline fun <reified T> to(): T? {
-        return when (this) {
+    inline fun <reified T> to(): T? = when (this) {
             is JsString -> value as T
             is JsBool -> boolean as T
             is JsNumber -> number as T
             is JsObject -> elements as T
             is JsArray -> elements as T
             is JsNull -> null
-        }
     }
 
-    inline fun <reified T> toList(): List<T?>? {
-        return when (this) {
+    inline fun <reified T> toList(): List<T?>? = when (this) {
             is JsArray -> elements.map { it.to<T>() }
             is JsNull -> null
             else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
-        }
     }
 
-    inline fun <reified T> toMap(): Map<String, T?>? {
-        return when (this) {
+    inline fun <reified T> toMap(): Map<String, T?>? = when (this) {
             is JsObject -> elements.mapValues { it.value.to<T>() }
             is JsNull -> null
             else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
-        }
     }
 
-    operator fun get(key: String): JsonValue? {
-        return when (this) {
+    operator fun get(key: String): JsonValue? = when (this) {
             is JsObject -> this.elements[key]
             else -> null
-        }
     }
 
     operator fun get(ix: Int): JsonValue? {
@@ -46,26 +38,27 @@ sealed class JsonValue {
             else -> null
         }
     }
-
-    override fun toString(): String {
-        return when (this) {
-            is JsString -> """"${this.value}""""
-            is JsBool -> if (this.boolean) "true" else "false"
-            is JsNumber -> this.number.toString()
-            is JsObject -> this.elements.toJsonString()
-            is JsArray -> this.elements.asSequence()
-                    .joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is JsNull -> "null"
-        }
-    }
 }
 
-class JsString(val value: String): JsonValue()
-class JsBool(val boolean: Boolean): JsonValue()
-class JsNumber(val number: Number): JsonValue()
-class JsObject(val elements: LinkedHashMap<String, JsonValue>): JsonValue()
-class JsArray(val elements: List<JsonValue>): JsonValue()
-object JsNull: JsonValue()
+data class JsString(val value: String): JsonValue() {
+    override fun toString() = """"$value""""
+}
+data class JsBool(val boolean: Boolean): JsonValue() {
+    override fun toString() = if (boolean) "true" else "false"
+}
+data class JsNumber(val number: Number): JsonValue() {
+    override fun toString() = number.toString()
+}
+data class JsObject(val elements: LinkedHashMap<String, JsonValue>): JsonValue() {
+    override fun toString() = elements.toJsonString()
+}
+data class JsArray(val elements: List<JsonValue>): JsonValue() {
+    override fun toString() = elements.asSequence()
+                .joinToString(prefix = "[", postfix = "]") { it.toString() }
+}
+object JsNull: JsonValue() {
+    override fun toString() = "null"
+}
 
 class Jkob {
 
@@ -116,19 +109,8 @@ class Jkob {
         entries[this] = JsArray(values.map { JsBool(it) })
     }
 
-    override fun toString(): String {
-        return entries.toJsonString()
-    }
+    override fun toString() = entries.toJsonString()
 }
-
-fun String.js() = JsString(this)
-fun Number.js() = JsNumber(this)
-fun Boolean.js() = JsBool(this)
-
-fun Map<String, JsonValue>.toJsonString() = asSequence()
-            .joinToString(prefix = "{", postfix = "}") {
-                entry -> """"${entry.key}": ${entry.value}"""}
-
 
 inline fun <T> json(body: Jkob.() -> T): Jkob {
     val json = Jkob()
