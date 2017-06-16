@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/soundvibe/jkob.svg)](https://travis-ci.org/soundvibe/jkob)
 ### Kotlin DSL for type-safe JSON building
 
-##### An example of building JSON:
+##### An example to building JSON:
 ```kotlin
 val json = json {
     "id" to "value" //key->value pair
@@ -25,6 +25,13 @@ Output:
 ```javascript
 {"id": "value", "name": "foo", "items": ["value1", "value2", "value3"], "item1": 1, "item2": 2, "numbers": [1, 2, 3], "child": {"age": 19, "isValid": false, "isNull": null}}
 ```
+
+##### An example to retrieve elements from JSON:
+```kotlin
+val numbers = json["numbers"]?.toList<Int>()
+println(numbers) //prints [1, 2, 3]
+```
+
 
 ## Binaries
 
@@ -58,7 +65,7 @@ Copyright 2017 Linas Naginionis
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+You may obtain a copy to the License at
 
 <http://www.apache.org/licenses/LICENSE-2.0>
 

@@ -6,7 +6,7 @@ package net.soundvibe.jkob
 
 sealed class JsonValue {
 
-    inline fun <reified T> of(): T? {
+    inline fun <reified T> to(): T? {
         return when (this) {
             is JsString -> value as T
             is JsBool -> boolean as T
@@ -17,19 +17,33 @@ sealed class JsonValue {
         }
     }
 
-    inline fun <reified T> ofArray(): List<T?>? {
+    inline fun <reified T> toList(): List<T?>? {
         return when (this) {
-            is JsArray -> elements.map { it.of<T>() }
+            is JsArray -> elements.map { it.to<T>() }
             is JsNull -> null
-            else -> throw ClassCastException("Underlying json value is of different type: ${this.javaClass}")
+            else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
         }
     }
 
-    inline fun <reified T> ofObject(): Map<String, T?>? {
+    inline fun <reified T> toMap(): Map<String, T?>? {
         return when (this) {
-            is JsObject -> elements.mapValues { it.value.of<T>() }
+            is JsObject -> elements.mapValues { it.value.to<T>() }
             is JsNull -> null
-            else -> throw ClassCastException("Underlying json value is of different type: ${this.javaClass}")
+            else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
+        }
+    }
+
+    operator fun get(key: String): JsonValue? {
+        return when (this) {
+            is JsObject -> this.elements[key]
+            else -> null
+        }
+    }
+
+    operator fun get(ix: Int): JsonValue? {
+        return when (this) {
+            is JsArray -> this.elements[ix]
+            else -> null
         }
     }
 
@@ -38,7 +52,7 @@ sealed class JsonValue {
             is JsString -> """"${this.value}""""
             is JsBool -> if (this.boolean) "true" else "false"
             is JsNumber -> this.number.toString()
-            is JsObject -> this.toJsonString()
+            is JsObject -> this.elements.toJsonString()
             is JsArray -> this.elements.asSequence()
                     .joinToString(prefix = "[", postfix = "]") { it.toString() }
             is JsNull -> "null"
@@ -46,11 +60,11 @@ sealed class JsonValue {
     }
 }
 
-class JsString(val value: String): JsonValue(), CharSequence by value
+class JsString(val value: String): JsonValue()
 class JsBool(val boolean: Boolean): JsonValue()
 class JsNumber(val number: Number): JsonValue()
-class JsObject(val elements: LinkedHashMap<String, JsonValue>): JsonValue(), Map<String, JsonValue> by elements
-class JsArray(val elements: List<JsonValue>): JsonValue(), List<Any> by elements
+class JsObject(val elements: LinkedHashMap<String, JsonValue>): JsonValue()
+class JsArray(val elements: List<JsonValue>): JsonValue()
 object JsNull: JsonValue()
 
 class Jkob {

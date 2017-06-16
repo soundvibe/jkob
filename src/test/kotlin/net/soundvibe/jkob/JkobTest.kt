@@ -13,11 +13,7 @@ class JkobTest {
         val json = json {
             "id" to "value"
             "name" to "foo"
-            "items" [
-                 "value1",
-                 "value2",
-                 "value3"
-            ]
+            "items" ["value1", "value2", "value3"]
             for (i in 1..2) "item$i" to i
             "numbers" [1, 2, 3]
             "child" {
@@ -27,17 +23,16 @@ class JkobTest {
             }
         }
 
+        assertEquals("value", json["id"]?.to<String>())
         assertEquals(listOf("value1", "value2", "value3"),
-                json["items"]?.ofArray<String>()
-        )
-        assertEquals("value", json["id"]?.of<String>())
-        val map: Map<String, Any?> = mapOf("age" to 19,
+                json["items"]?.toList<String>())
+        val map: Map<String, Any?> = mapOf(
+                "age" to 19,
                 "isValid" to false,
                 "isNull" to null)
-        assertEquals(map,
-                json["child"]?.ofObject<Any>())
-
-        println(json.toString())
+        assertEquals(map, json["child"]?.toMap<Any>())
+        assertEquals(19, json["child"]?.get("age")?.to<Int>())
+        assertEquals(listOf(1,2,3), json["numbers"]?.toList<Int>())
     }
 
     @Test
