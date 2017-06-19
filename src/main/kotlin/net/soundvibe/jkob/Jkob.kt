@@ -85,16 +85,24 @@ class Jkob {
     }
 
     infix fun String.to(value: Jkob.() -> Unit) {
-        val json = json(value)
-        entries[this] = JsObject(json.entries)
+        entries[this] = toObject(value)
     }
 
     operator fun String.invoke(value: Jkob.() -> Unit) {
         to(value)
     }
 
+    fun toObject(value: Jkob.() -> Unit): JsObject {
+        val json = json(value)
+        return JsObject(json.entries)
+    }
+
+    operator fun String.get(vararg objects: Jkob.() -> Unit) {
+        entries[this] = JsArray(objects.map { toObject(it) })
+    }
+
     operator fun String.get(vararg values: JsonValue) {
-        values.forEach { entries[this] = it }
+        entries[this] = JsArray(values.asList())
     }
 
     operator fun String.get(vararg values: String) {

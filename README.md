@@ -4,7 +4,7 @@
 
 ### Kotlin DSL for type-safe JSON building
 
-##### An example to building JSON:
+##### An example of building JSON:
 ```kotlin
 val json = json {
     "id" to "value" //key->value pair

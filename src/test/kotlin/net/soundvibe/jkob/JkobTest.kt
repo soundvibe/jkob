@@ -44,4 +44,18 @@ class JkobTest {
         //language=JSON
         assertEquals("{\"foo\": \"bar\", \"items\": [1, 2, 3]}", jsonString)
     }
+
+    @Test
+    fun shouldDeclareObjectsInArrays() {
+        val jsonString = json {
+            "objects" [{
+                "key" to "value"
+            }, {
+                "key2" to "value2"
+            }]
+        }.toString()
+
+        //language=JSON
+        assertEquals("{\"objects\": [{\"key\": \"value\"}, {\"key2\": \"value2\"}]}", jsonString)
+    }
 }
