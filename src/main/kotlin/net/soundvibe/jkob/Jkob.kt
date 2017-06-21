@@ -18,13 +18,13 @@ sealed class JsonValue {
     inline fun <reified T> toList(): List<T?>? = when (this) {
             is JsArray -> elements.map { it.to<T>() }
             is JsNull -> null
-            else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
+            else -> throw ClassCastException("Underlying json value is of different type: ${this.javaClass}")
     }
 
     inline fun <reified T> toMap(): Map<String, T?>? = when (this) {
             is JsObject -> elements.mapValues { it.value.to<T>() }
             is JsNull -> null
-            else -> throw ClassCastException("Underlying json value is to different type: ${this.javaClass}")
+            else -> throw ClassCastException("Underlying json value is of different type: ${this.javaClass}")
     }
 
     operator fun get(key: String): JsonValue? = when (this) {
@@ -41,7 +41,7 @@ sealed class JsonValue {
 }
 
 data class JsString(val value: String): JsonValue() {
-    override fun toString() = """"$value""""
+    override fun toString() = value.toJsQuote()
 }
 data class JsBool(val boolean: Boolean): JsonValue() {
     override fun toString() = if (boolean) "true" else "false"
@@ -49,7 +49,7 @@ data class JsBool(val boolean: Boolean): JsonValue() {
 data class JsNumber(val number: Number): JsonValue() {
     override fun toString() = number.toString()
 }
-data class JsObject(val elements: LinkedHashMap<String, JsonValue>): JsonValue() {
+data class JsObject(val elements: Map<String, JsonValue>): JsonValue() {
     override fun toString() = elements.toJsonString()
 }
 data class JsArray(val elements: List<JsonValue>): JsonValue() {

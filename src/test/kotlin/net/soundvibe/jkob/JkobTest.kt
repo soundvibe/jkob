@@ -58,4 +58,18 @@ class JkobTest {
         //language=JSON
         assertEquals("{\"objects\": [{\"key\": \"value\"}, {\"key2\": \"value2\"}]}", jsonString)
     }
+
+    @Test
+    fun shouldEscapeValues() {
+        val jsonString = json {
+            "objects" [{
+                "key" to """Company "Name""""
+            }, {
+                "key2" to "value2"
+            }]
+        }.toString()
+
+        //language=JSON
+        assertEquals("{\"objects\": [{\"key\": \"Company \\\"Name\\\"\"}, {\"key2\": \"value2\"}]}", jsonString)
+    }
 }
