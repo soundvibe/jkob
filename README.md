@@ -43,7 +43,7 @@ Binaries and dependency information for Maven, Ivy, Gradle and others can be fou
 Example for Gradle:
 
 ```groovy
-compile 'net.soundvibe:jkob:1.0.0-SNAPSHOT'
+compile 'net.soundvibe:jkob:1.0.0'
 ```
 
 and for Maven:
@@ -52,7 +52,7 @@ and for Maven:
 <dependency>
     <groupId>net.soundvibe</groupId>
     <artifactId>jkob</artifactId>
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.0</version>
 </dependency>
 ```
 
