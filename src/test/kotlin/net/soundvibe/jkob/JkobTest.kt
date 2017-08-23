@@ -72,4 +72,17 @@ class JkobTest {
         //language=JSON
         assertEquals("{\"objects\": [{\"key\": \"Company \\\"Name\\\"\"}, {\"key2\": \"value2\"}]}", jsonString)
     }
+
+    @Test
+    fun shouldBuildArraysAsPairs() {
+        val json = json {
+            "object" to {
+                "key" to "value"
+                "arrayInt" to arrayOf(1,2,3)
+                "arrayString" to setOf("one", "two")
+            }
+        }
+        //language=JSON
+        assertEquals("{\"object\": {\"key\": \"value\", \"arrayInt\": [1, 2, 3], \"arrayString\": [\"one\", \"two\"]}}", json.toString())
+    }
 }

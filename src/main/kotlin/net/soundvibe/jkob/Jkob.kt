@@ -88,6 +88,46 @@ class Jkob {
         entries[this] = toObject(value)
     }
 
+    @JvmName("ToArrayOfJsonValues")
+    infix fun String.to(jsonValues: Array<out JsonValue>) {
+        entries[this] = JsArray(jsonValues.toList())
+    }
+
+    @JvmName("ToIterableOfJsonValues")
+    infix fun String.to(jsonValues: Iterable<JsonValue>) {
+        entries[this] = JsArray(jsonValues.toList())
+    }
+
+    @JvmName("ToArrayOfBooleans")
+    infix fun String.to(booleans: Array<out Boolean>) {
+        entries[this] = JsArray(booleans.map { JsBool(it) } )
+    }
+
+    @JvmName("ToIterableOfBooleans")
+    infix fun String.to(booleans: Iterable<Boolean>) {
+        entries[this] = JsArray(booleans.map { JsBool(it) } )
+    }
+
+    @JvmName("ToArrayOfNumbers")
+    infix fun String.to(numbers: Array<out Number>) {
+        entries[this] = JsArray(numbers.map { JsNumber(it) } )
+    }
+
+    @JvmName("ToIterableOfNumbers")
+    infix fun String.to(numbers: Iterable<Number>) {
+        entries[this] = JsArray(numbers.map { JsNumber(it) } )
+    }
+
+    @JvmName("ToArrayOfCharSequences")
+    infix fun String.to(chars: Array<out CharSequence>) {
+        entries[this] = JsArray(chars.map { JsString(it.toString()) } )
+    }
+
+    @JvmName("ToIterableOfCharSequences")
+    infix fun String.to(chars: Iterable<CharSequence>) {
+        entries[this] = JsArray(chars.map { JsString(it.toString()) } )
+    }
+
     operator fun String.invoke(value: Jkob.() -> Unit) {
         to(value)
     }
