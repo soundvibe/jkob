@@ -85,4 +85,18 @@ class JkobTest {
         //language=JSON
         assertEquals("{\"object\": {\"key\": \"value\", \"arrayInt\": [1, 2, 3], \"arrayString\": [\"one\", \"two\"]}}", json.toString())
     }
+
+    @Test
+    fun shouldGetAsMap() {
+        val json = json {
+            "object" to {
+                "key" to "value"
+                "number" to 10
+            }
+        }
+        val map = json.toMap()
+
+        assertEquals(JsString("value"), map["object"]?.get("key"))
+        assertEquals(JsNumber(10), map["object"]?.get("number"))
+    }
 }

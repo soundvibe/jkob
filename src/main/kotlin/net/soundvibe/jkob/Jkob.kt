@@ -158,6 +158,9 @@ class Jkob {
     }
 
     override fun toString() = entries.toJsonString()
+
+    fun toMap(): Map<String, JsonValue> = entries
+
 }
 
 inline fun <T> json(body: Jkob.() -> T): Jkob {
