@@ -71,21 +71,30 @@ object DefaultSerializers {
         return deserializers[kClass] as DeSerializer<JsonValue,Any>?
     }
 
-
-    val serializers: Map<KClass<*>, Serializer<*>> = mapOf(
+    val serializers: Map<KClass<*>, Serializer<*>> = mutableMapOf(
             String::class to StringSerializer,
+            Char::class to CharSerializer,
             Number::class to NumberSerializer,
+            Byte::class to ByteSerializer,
+            Short::class to ShortSerializer,
             Int::class to IntSerializer,
             Long::class to LongSerializer,
+            Double::class to DoubleSerializer,
+            Float::class to FloatSerializer,
             Boolean::class to BooleanSerializer
     )
 
-    val deserializers: Map<KClass<*>, DeSerializer<out JsonValue, *>> = mapOf(
+    val deserializers: Map<KClass<*>, DeSerializer<out JsonValue, *>> = mutableMapOf(
             String::class to StringSerializer,
+            Char::class to CharSerializer,
             JsString::class to StringSerializer,
             JsNumber::class to NumberSerializer,
             Number::class to NumberSerializer,
+            Double::class to DoubleSerializer,
+            Float::class to FloatSerializer,
             Int::class to IntSerializer,
+            Short::class to ShortSerializer,
+            Byte::class to ByteSerializer,
             Long::class to LongSerializer,
             JsObject::class to ObjectSerializer,
             Any::class to ObjectSerializer,

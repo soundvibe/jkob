@@ -22,6 +22,7 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
                     .mapKeys { it.key.toString() }
                     .mapValues { it.value.toJson() })
             is Collection<*> -> JsArray(value.map { it.toJson() })
+            is Enum<*> -> StringSerializer.serialize(value.name)
             else -> {
                 JsObject(kClass.memberProperties
                         .associateBy( { it.name }, {
@@ -35,7 +36,11 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
     override fun deserialize(value: JsonValue, returnClass: KClass<*>): Any? = when (value) {
         is JsObject -> deserializeJsObject(value, returnClass)
         is JsArray -> deserializeJsArray(value, returnClass)
-        is JsString -> StringSerializer.deserialize(value, returnClass)
+        is JsString -> when {
+            returnClass.isSubclassOf(Enum::class) -> returnClass.java.enumConstants.first {
+                (it as Enum<*>).name == StringSerializer.deserialize(value, returnClass) }
+            else -> StringSerializer.deserialize(value, returnClass)
+        }
         is JsNumber -> NumberSerializer.deserialize(value, returnClass)
         is JsBool -> BooleanSerializer.deserialize(value, returnClass)
         JsNull -> null
@@ -101,6 +106,22 @@ private fun resolveValue(parameter: KParameter, value: JsonValue): Any? {
             parameter.type.jvmErasure)
 }
 
+object CharSerializer: Serializer<Char>, DeSerializer<JsonValue, Char> {
+
+    override fun serialize(value: Char?): JsonValue = when (value) {
+        null -> JsNull
+        else -> JsString(value.toString())
+    }
+
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Char? = when (value) {
+        is JsString -> value.value[0]
+        is JsBool -> value.boolean.toString()[0]
+        is JsNumber -> value.number.toString()[0]
+        JsNull -> null
+        else -> value.toString()[0]
+    }
+}
+
 object StringSerializer: Serializer<String>, DeSerializer<JsonValue, String> {
 
     override fun serialize(value: String?): JsonValue = when (value) {
@@ -117,6 +138,30 @@ object StringSerializer: Serializer<String>, DeSerializer<JsonValue, String> {
     }
 }
 
+object FloatSerializer: Serializer<Float>, DeSerializer<JsonValue, Float> {
+    override fun serialize(value: Float?): JsonValue = NumberSerializer.serialize(value)
+
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Float? = when (value) {
+        is JsNumber -> value.number.toFloat()
+        JsNull -> null
+        is JsString -> value.value.toFloat()
+        is JsBool -> if (value.boolean) 1f else 0f
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Float")
+    }
+}
+
+object DoubleSerializer: Serializer<Double>, DeSerializer<JsonValue, Double> {
+    override fun serialize(value: Double?): JsonValue = NumberSerializer.serialize(value)
+
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Double? = when (value) {
+        is JsNumber -> value.number.toDouble()
+        JsNull -> null
+        is JsString -> value.value.toDouble()
+        is JsBool -> if (value.boolean) 1.0 else 0.0
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Double")
+    }
+}
+
 object NumberSerializer: Serializer<Number>, DeSerializer<JsonValue, Number> {
     override fun serialize(value: Number?): JsonValue = when (value) {
         null -> JsNull
@@ -129,6 +174,30 @@ object NumberSerializer: Serializer<Number>, DeSerializer<JsonValue, Number> {
         is JsString -> value.value.toBigDecimal()
         is JsBool -> if (value.boolean) 1 else 0
         else -> throw UnsupportedOperationException("Cannot deserialize from $value to Number")
+    }
+}
+
+object ByteSerializer: Serializer<Int>, DeSerializer<JsonValue, Byte> {
+    override fun serialize(value: Int?): JsonValue = NumberSerializer.serialize(value)
+
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Byte? = when (value) {
+        is JsNumber -> value.number.toByte()
+        JsNull -> null
+        is JsString -> value.value.toByte()
+        is JsBool -> if (value.boolean) 1 else 0
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Byte")
+    }
+}
+
+object ShortSerializer: Serializer<Int>, DeSerializer<JsonValue, Short> {
+    override fun serialize(value: Int?): JsonValue = NumberSerializer.serialize(value)
+
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Short? = when (value) {
+        is JsNumber -> value.number.toShort()
+        JsNull -> null
+        is JsString -> value.value.toShort()
+        is JsBool -> if (value.boolean) 1 else 0
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Short")
     }
 }
 

@@ -3,15 +3,43 @@ package net.soundvibe.jkob
 import net.soundvibe.jkob.data.*
 import org.junit.Assert.*
 import org.junit.Test
+import kotlin.test.assertEquals
 
 @Suppress("UNCHECKED_CAST")
 class ObjectSerializerTest {
 
     data class Foo(val name: String, val bar: Bar)
     data class Bar(val prop: Int)
+    data class Score(val value: Double)
+    enum class State {
+        INIT,
+        FINISH
+    }
+
+    data class CustomState(val state: State)
 
     private val json = "{\"bar\": {\"prop\": 19}, \"name\": \"Bob\"}"
     private val mapJson = "{\"foo\": {\"prop\": 20}, \"bar\": {\"bar\": {\"prop\": 11}, \"name\": \"one\"}}"
+
+    @Test
+    fun `should serialize doubles`() {
+        val score = Score(15.6)
+        val jsonString = score.toJson().toString()
+        println(jsonString)
+
+        val actual = jsonString.fromJson<Score>()
+        assertEquals(score.value, actual!!.value, 0.01)
+    }
+
+    @Test
+    fun `should deserialize enums`() {
+        val expected = CustomState(State.FINISH)
+        val jsonString = expected.toJson().toString()
+        println(jsonString)
+
+        val actual = jsonString.fromJson<CustomState>()
+        assertEquals(expected, actual)
+    }
 
     @Test
     fun `should serialize data classes`() {
