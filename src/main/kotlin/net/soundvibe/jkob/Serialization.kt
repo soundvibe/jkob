@@ -1,8 +1,11 @@
 package net.soundvibe.jkob
 
 import com.beust.klaxon.*
+import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl
 import java.io.StringReader
+import java.lang.reflect.*
 import kotlin.reflect.*
+
 
 @Target(AnnotationTarget.ANNOTATION_CLASS, AnnotationTarget.CLASS)
 annotation class Sealed(val classPropertyName: String = "className")
@@ -31,12 +34,29 @@ fun JsonBase.toJkob(): JsonValue =
         else -> this.toJson()
     }
 
-inline fun <reified T> fromJson(json: JsonValue): T? {
+inline fun <reified T> parseJson(json: JsonValue): T? {
+    val aClass = when (T::class) {
+        List::class, Set::class, Collection::class -> {
+            val type = object : TypeReference<T>() {}.type
+            val rawType = ((type as ParameterizedType).actualTypeArguments.first() as WildcardTypeImpl).upperBounds.first()
+            (rawType as Class<*>).kotlin
+        }
+        else -> T::class
+    }
     val deSerializer = DefaultSerializers.findDeSerializer<T>()
-    return deSerializer.deserialize(json, T::class)
+    return deSerializer.deserialize(json, aClass)
 }
 
-inline fun <reified T> String.fromJson(): T? = fromJson(klaxon.parseJsonObject(StringReader(this)).toJkob())
+inline fun <reified T> String.parseJson(): T? = when (T::class) {
+    List::class, Set::class, Collection::class -> {
+        parseJson(klaxon.parseJsonArray(StringReader(this)).toJkob())
+    }
+    else -> parseJson(klaxon.parseJsonObject(StringReader(this)).toJkob())
+}
+
+fun deserializeToClass(kClass: KClass<*>, value: JsonValue): Any? =
+        DefaultSerializers.findDeSerializer(kClass)?.deserialize(value, kClass) ?:
+        ObjectSerializer.deserialize(value, kClass)
 
 
 interface Serializer<in T> {
@@ -87,8 +107,6 @@ object DefaultSerializers {
     val deserializers: Map<KClass<*>, DeSerializer<out JsonValue, *>> = mutableMapOf(
             String::class to StringSerializer,
             Char::class to CharSerializer,
-            JsString::class to StringSerializer,
-            JsNumber::class to NumberSerializer,
             Number::class to NumberSerializer,
             Double::class to DoubleSerializer,
             Float::class to FloatSerializer,
@@ -96,11 +114,27 @@ object DefaultSerializers {
             Short::class to ShortSerializer,
             Byte::class to ByteSerializer,
             Long::class to LongSerializer,
-            JsObject::class to ObjectSerializer,
             Any::class to ObjectSerializer,
-            JsBool::class to BooleanSerializer,
             Boolean::class to BooleanSerializer,
-            JsNull::class to NullDeserializer
+            Collection::class to CollectionDeSerializer,
+            List::class to ListDeSerializer,
+            Set::class to SetDeSerializer
     )
+}
+
+abstract class TypeReference<T> {
+
+    val type: java.lang.reflect.Type
+
+    @Volatile
+    private var constructor: Constructor<*>? = null
+
+    init {
+        val superclass = javaClass.genericSuperclass
+        if (superclass is Class<*>) {
+            throw RuntimeException("Missing type parameter.")
+        }
+        type = (superclass as ParameterizedType).actualTypeArguments[0]
+    }
 }
 

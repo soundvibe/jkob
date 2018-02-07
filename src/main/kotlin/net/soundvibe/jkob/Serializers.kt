@@ -225,10 +225,6 @@ object LongSerializer: Serializer<Long>, DeSerializer<JsonValue, Long> {
     }
 }
 
-object NullDeserializer: DeSerializer<JsNull,Nothing> {
-    override fun deserialize(value: JsNull, returnClass: KClass<*>): Nothing? = null
-}
-
 object BooleanSerializer: Serializer<Boolean>, DeSerializer<JsonValue,Boolean> {
     override fun serialize(value: Boolean?): JsonValue = when (value) {
         null -> JsNull
@@ -241,5 +237,29 @@ object BooleanSerializer: Serializer<Boolean>, DeSerializer<JsonValue,Boolean> {
         is JsNumber -> value.number.toInt() == 1
         is JsString -> value.value.toBoolean()
         else -> throw UnsupportedOperationException("Cannot deserialize from $value to Boolean")
+    }
+}
+
+object CollectionDeSerializer: DeSerializer<JsonValue, Collection<*>> {
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Collection<*>? = when (value) {
+        JsNull -> emptyList<Any>()
+        is JsArray -> value.elements.map { deserializeToClass(returnClass, it) }
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Collection")
+    }
+}
+
+object ListDeSerializer: DeSerializer<JsonValue, List<*>> {
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): List<*>? = when (value) {
+        JsNull -> emptyList<Any>()
+        is JsArray -> value.elements.map { deserializeToClass(returnClass, it) }
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Collection")
+    }
+}
+
+object SetDeSerializer: DeSerializer<JsonValue, Set<*>> {
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Set<*>? = when (value) {
+        JsNull -> emptySet<Any>()
+        is JsArray -> value.elements.map { deserializeToClass(returnClass, it) }.toSet()
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Collection")
     }
 }

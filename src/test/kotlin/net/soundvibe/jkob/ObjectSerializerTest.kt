@@ -27,7 +27,7 @@ class ObjectSerializerTest {
         val jsonString = score.toJson().toString()
         println(jsonString)
 
-        val actual = jsonString.fromJson<Score>()
+        val actual = jsonString.parseJson<Score>()
         assertEquals(score.value, actual!!.value, 0.01)
     }
 
@@ -37,7 +37,7 @@ class ObjectSerializerTest {
         val jsonString = expected.toJson().toString()
         println(jsonString)
 
-        val actual = jsonString.fromJson<CustomState>()
+        val actual = jsonString.parseJson<CustomState>()
         assertEquals(expected, actual)
     }
 
@@ -50,7 +50,7 @@ class ObjectSerializerTest {
 
     @Test
     fun `should deserialize data class`() {
-        val foo = json.fromJson<Foo>()
+        val foo = json.parseJson<Foo>()
         assertEquals(Foo("Bob", Bar(19)), foo)
     }
 
@@ -63,7 +63,7 @@ class ObjectSerializerTest {
 
     @Test
     fun `should deserialize from maps`() {
-        val actual = mapJson.fromJson<Map<String, *>>()
+        val actual = mapJson.parseJson<Map<String, *>>()
 
         assertFalse(actual == null)
         val foo = actual?.get("foo") as Map<String, *>
@@ -78,7 +78,7 @@ class ObjectSerializerTest {
         val jsonString = laptop.toJson().toString()
         println(jsonString)
 
-        val result = jsonString.fromJson<Device>()
+        val result = jsonString.parseJson<Device>()
         assertEquals(laptop, result)
     }
 
@@ -89,7 +89,16 @@ class ObjectSerializerTest {
         val jsonString = mobile.toJson().toString()
         println(jsonString)
 
-        val result = jsonString.fromJson<Device>()
+        val result = jsonString.parseJson<Device>()
         assertEquals(mobile, result)
+    }
+
+    @Test
+    fun `should support Lists`() {
+        val bars = listOf(Bar(99), Bar(23))
+        val jsonString = bars.toJson().toString()
+        println(jsonString)
+        val actual = jsonString.parseJson<List<Bar>>()
+        assertEquals(bars, actual)
     }
 }
