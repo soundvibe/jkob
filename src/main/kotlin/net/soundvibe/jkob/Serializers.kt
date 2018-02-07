@@ -252,7 +252,7 @@ object ListDeSerializer: DeSerializer<JsonValue, List<*>> {
     override fun deserialize(value: JsonValue, returnClass: KClass<*>): List<*>? = when (value) {
         JsNull -> emptyList<Any>()
         is JsArray -> value.elements.map { deserializeToClass(returnClass, it) }
-        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Collection")
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to List")
     }
 }
 
@@ -260,6 +260,14 @@ object SetDeSerializer: DeSerializer<JsonValue, Set<*>> {
     override fun deserialize(value: JsonValue, returnClass: KClass<*>): Set<*>? = when (value) {
         JsNull -> emptySet<Any>()
         is JsArray -> value.elements.map { deserializeToClass(returnClass, it) }.toSet()
-        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Collection")
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Set")
+    }
+}
+
+object MapDeSerializer: DeSerializer<JsonValue, Map<String, *>> {
+    override fun deserialize(value: JsonValue, returnClass: KClass<*>): Map<String, *>? = when (value) {
+        JsNull -> emptyMap<String, Any>()
+        is JsObject -> value.elements.mapValues { deserializeToClass(returnClass, it.value) }
+        else -> throw UnsupportedOperationException("Cannot deserialize from $value to Map")
     }
 }

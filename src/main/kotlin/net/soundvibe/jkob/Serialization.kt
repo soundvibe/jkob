@@ -4,6 +4,7 @@ import com.beust.klaxon.*
 import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl
 import java.io.StringReader
 import java.lang.reflect.*
+import java.lang.reflect.Type
 import kotlin.reflect.*
 
 
@@ -36,15 +37,22 @@ fun JsonBase.toJkob(): JsonValue =
 
 inline fun <reified T> parseJson(json: JsonValue): T? {
     val aClass = when (T::class) {
-        List::class, Set::class, Collection::class -> {
-            val type = object : TypeReference<T>() {}.type
-            val rawType = ((type as ParameterizedType).actualTypeArguments.first() as WildcardTypeImpl).upperBounds.first()
-            (rawType as Class<*>).kotlin
-        }
+        List::class, Set::class, Collection::class -> resolveCollectionElementClass(object : TypeReference<T>() {}.type)
+        Map::class -> resolveMapElementClass(object : TypeReference<T>() {}.type)
         else -> T::class
     }
     val deSerializer = DefaultSerializers.findDeSerializer<T>()
     return deSerializer.deserialize(json, aClass)
+}
+
+fun resolveCollectionElementClass(type: Type): KClass<*> {
+    val rawType = ((type as ParameterizedType).actualTypeArguments.first() as WildcardTypeImpl).upperBounds.first()
+    return (rawType as Class<*>).kotlin
+}
+
+fun resolveMapElementClass(type: Type): KClass<*> {
+    val rawType = ((type as ParameterizedType).actualTypeArguments[1] as WildcardTypeImpl).upperBounds.first()
+    return (rawType as Class<*>).kotlin
 }
 
 inline fun <reified T> String.parseJson(): T? = when (T::class) {
@@ -118,7 +126,8 @@ object DefaultSerializers {
             Boolean::class to BooleanSerializer,
             Collection::class to CollectionDeSerializer,
             List::class to ListDeSerializer,
-            Set::class to SetDeSerializer
+            Set::class to SetDeSerializer,
+            Map::class to MapDeSerializer
     )
 }
 

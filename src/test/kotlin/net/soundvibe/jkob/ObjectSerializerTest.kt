@@ -25,7 +25,6 @@ class ObjectSerializerTest {
     fun `should serialize doubles`() {
         val score = Score(15.6)
         val jsonString = score.toJson().toString()
-        println(jsonString)
 
         val actual = jsonString.parseJson<Score>()
         assertEquals(score.value, actual!!.value, 0.01)
@@ -35,7 +34,6 @@ class ObjectSerializerTest {
     fun `should deserialize enums`() {
         val expected = CustomState(State.FINISH)
         val jsonString = expected.toJson().toString()
-        println(jsonString)
 
         val actual = jsonString.parseJson<CustomState>()
         assertEquals(expected, actual)
@@ -76,7 +74,6 @@ class ObjectSerializerTest {
     fun `should deserialize to sealed class from data class`() {
         val laptop = Device.Laptop("Lenovo")
         val jsonString = laptop.toJson().toString()
-        println(jsonString)
 
         val result = jsonString.parseJson<Device>()
         assertEquals(laptop, result)
@@ -87,7 +84,6 @@ class ObjectSerializerTest {
         val mobile = Device.Mobile()
         mobile.imei = "123456"
         val jsonString = mobile.toJson().toString()
-        println(jsonString)
 
         val result = jsonString.parseJson<Device>()
         assertEquals(mobile, result)
@@ -97,8 +93,15 @@ class ObjectSerializerTest {
     fun `should support Lists`() {
         val bars = listOf(Bar(99), Bar(23))
         val jsonString = bars.toJson().toString()
-        println(jsonString)
         val actual = jsonString.parseJson<List<Bar>>()
         assertEquals(bars, actual)
+    }
+
+    @Test
+    fun `should support maps`() {
+        val expected = mapOf("one" to Bar(1), "two" to Bar(2))
+        val jsonString = expected.toJson().toString()
+        val actual = jsonString.parseJson<Map<String, Bar>>()
+        assertEquals(expected, actual)
     }
 }
