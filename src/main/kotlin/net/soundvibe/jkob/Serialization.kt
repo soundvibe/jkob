@@ -1,6 +1,7 @@
 package net.soundvibe.jkob
 
 import com.beust.klaxon.*
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner
 import sun.reflect.generics.reflectiveObjects.WildcardTypeImpl
 import java.io.StringReader
 import java.lang.reflect.*
@@ -60,6 +61,15 @@ inline fun <reified T> String.parseJson(): T? = when (T::class) {
         parseJson(klaxon.parseJsonArray(StringReader(this)).toJkob())
     }
     else -> parseJson(klaxon.parseJsonObject(StringReader(this)).toJkob())
+}
+
+fun deserializeValue(value: JsonValue): Any? = when (value) {
+    is JsString -> value.value
+    is JsBool -> value.boolean
+    is JsNumber -> value.number
+    is JsObject -> value.elements.mapValues { deserializeValue(it.value) }
+    is JsArray -> value.elements.map { deserializeValue(it) }
+    JsNull -> null
 }
 
 fun deserializeToClass(kClass: KClass<*>, value: JsonValue): Any? =
@@ -129,6 +139,37 @@ object DefaultSerializers {
             Set::class to SetDeSerializer,
             Map::class to MapDeSerializer
     )
+}
+
+private val cachedSealedClasses = mutableMapOf<String, Set<KClass<*>>>()
+
+fun findSealedClasses(packageName: String): Set<KClass<*>> {
+    val classes = cachedSealedClasses[packageName]
+    return if (classes == null) {
+        val resolvedSealedClasses = resolveSealedClasses(packageName)
+        putClasses(packageName, resolvedSealedClasses)
+        resolvedSealedClasses
+    } else classes
+}
+
+private fun resolveSealedClasses(packageName: String): Set<KClass<*>> {
+    val sealedClasses = mutableSetOf<KClass<*>>()
+    val classpathScanner = FastClasspathScanner(packageName)
+    classpathScanner
+            .matchAllClasses {
+                it.superclass?.let {
+                    superClass ->
+                    if ((superClass as Class<*>).kotlin.isSealed && (it as Class<*>).kotlin.isFinal) {
+                        sealedClasses.add(it.kotlin)
+                    }
+                }
+            }.scan()
+    return sealedClasses
+}
+
+@Synchronized
+private fun putClasses(packageName: String, sealedClasses: Set<KClass<*>>) {
+    cachedSealedClasses[packageName] = sealedClasses
 }
 
 abstract class TypeReference<T> {

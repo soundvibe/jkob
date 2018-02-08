@@ -2,7 +2,7 @@ package net.soundvibe.jkob
 
 import kotlin.reflect.*
 import kotlin.reflect.full.*
-import kotlin.reflect.jvm.jvmErasure
+import kotlin.reflect.jvm.*
 
 object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
 
@@ -46,15 +46,6 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
         JsNull -> null
     }
 
-    private fun deserializeValue(value: JsonValue): Any? = when (value) {
-        is JsString -> value.value
-        is JsBool -> value.boolean
-        is JsNumber -> value.number
-        is JsObject -> value.elements.mapValues { deserializeValue(it.value) }
-        is JsArray -> value.elements.map { deserializeValue(it) }
-        JsNull -> null
-    }
-
     private fun deserializeJsArray(value: JsArray, returnClass: KClass<*>): Any? = when {
         returnClass.isSubclassOf(Collection::class) -> value.elements.map { deserializeValue(it) }
         else -> throw IllegalStateException("Cannot map from JsArray to $returnClass")
@@ -93,8 +84,9 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
         val classPropertyName = returnClass.findAnnotation<Sealed>()?.classPropertyName ?: "className"
         val className = (value[classPropertyName] as JsString).value
 
-        val concreteClass = returnClass.nestedClasses
+        val concreteClass = findSealedClasses(returnClass.java.`package`.name)
                 .first { className == it.simpleName }
+
         return deserialize(value, concreteClass)
     }
 }
@@ -267,7 +259,11 @@ object SetDeSerializer: DeSerializer<JsonValue, Set<*>> {
 object MapDeSerializer: DeSerializer<JsonValue, Map<String, *>> {
     override fun deserialize(value: JsonValue, returnClass: KClass<*>): Map<String, *>? = when (value) {
         JsNull -> emptyMap<String, Any>()
-        is JsObject -> value.elements.mapValues { deserializeToClass(returnClass, it.value) }
+        is JsObject ->
+            if (returnClass == Any::class)
+                value.elements.mapValues { deserializeValue(it.value) }
+            else
+                value.elements.mapValues { deserializeToClass(returnClass, it.value) }
         else -> throw UnsupportedOperationException("Cannot deserialize from $value to Map")
     }
 }

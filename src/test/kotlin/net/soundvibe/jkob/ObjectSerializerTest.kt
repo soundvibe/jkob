@@ -72,7 +72,7 @@ class ObjectSerializerTest {
 
     @Test
     fun `should deserialize to sealed class from data class`() {
-        val laptop = Device.Laptop("Lenovo")
+        val laptop = Laptop("Lenovo")
         val jsonString = laptop.toJson().toString()
 
         val result = jsonString.parseJson<Device>()
@@ -81,7 +81,7 @@ class ObjectSerializerTest {
 
     @Test
     fun `should deserialize to sealed class from class`() {
-        val mobile = Device.Mobile()
+        val mobile = Mobile()
         mobile.imei = "123456"
         val jsonString = mobile.toJson().toString()
 
