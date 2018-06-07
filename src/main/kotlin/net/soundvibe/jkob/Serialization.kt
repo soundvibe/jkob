@@ -157,11 +157,8 @@ private fun resolveSealedClasses(packageName: String): Set<KClass<*>> {
     val classpathScanner = FastClasspathScanner(packageName)
     classpathScanner
             .matchAllClasses {
-                it.superclass?.let {
-                    superClass ->
-                    if ((superClass as Class<*>).kotlin.isSealed && (it as Class<*>).kotlin.isFinal) {
-                        sealedClasses.add(it.kotlin)
-                    }
+                if (it.kotlin.isSealed()) {
+                    sealedClasses.add(it.kotlin)
                 }
             }.scan()
     return sealedClasses

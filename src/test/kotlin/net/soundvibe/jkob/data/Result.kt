@@ -3,7 +3,20 @@ package net.soundvibe.jkob.data
 import net.soundvibe.jkob.Sealed
 
 sealed class Result
-open class Success<out T>(val value: T): Result()
+open class Success<out T>(val value: T): Result() {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Success<*>) return false
+
+        if (value != other.value) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return value?.hashCode() ?: 0
+    }
+}
 object Failure: Result()
 class MoreSuccess<T>(val value2: T): Success<T>(value2)
 

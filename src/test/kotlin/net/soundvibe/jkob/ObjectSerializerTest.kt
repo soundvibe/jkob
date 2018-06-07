@@ -80,6 +80,25 @@ class ObjectSerializerTest {
     }
 
     @Test
+    fun `should serialize and deserialize sealed class from Result`() {
+        val result = Success("Value")
+        val jsonString = result.toJson().toString()
+
+        val actual = jsonString.parseJson<Result>()
+        assertEquals(result, actual)
+    }
+
+    @Test
+    fun `should serialize and deserialize sealed class from MoreSuccess`() {
+        val result = MoreSuccess("Value")
+        val jsonString = result.toJson().toString()
+
+        val actual = jsonString.parseJson<Result>()
+        assertEquals(result, actual)
+    }
+
+
+    @Test
     fun `should deserialize to sealed class from class`() {
         val mobile = Mobile()
         mobile.imei = "123456"

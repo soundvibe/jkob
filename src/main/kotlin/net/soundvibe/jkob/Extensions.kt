@@ -1,5 +1,8 @@
 package net.soundvibe.jkob
 
+import kotlin.reflect.KClass
+import kotlin.reflect.full.*
+
 /**
  * @author linas on 17.6.16.
  */
@@ -46,4 +49,14 @@ fun unicodeEscape(ch: Char): String {
 
     sb.append(hex)
     return sb.toString()
+}
+
+fun KClass<*>.isSealed(): Boolean {
+    return if (this.isSealed) true
+    else this.superclasses.any { it.isSealed() }
+}
+
+fun KClass<*>.sealedPropertyName(): String? {
+    return if (this.isSealed) this.findAnnotation<Sealed>()?.classPropertyName ?: "className"
+    else this.superclasses.filter { it.isSealed }.map { it.sealedPropertyName() }.firstOrNull()
 }

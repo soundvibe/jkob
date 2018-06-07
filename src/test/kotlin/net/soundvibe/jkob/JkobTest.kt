@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 class JkobTest {
 
     @Test
-    fun shouldBuildJson() {
+    fun `should build json`() {
         val json = json {
             "id" to "value"
             "name" to "foo"
@@ -36,7 +36,7 @@ class JkobTest {
     }
 
     @Test
-    fun shouldSerializeToString() {
+    fun `should serialize to string`() {
         val jsonString = json {
             "foo" to "bar"
             "items" [1, 2, 3]
@@ -46,7 +46,7 @@ class JkobTest {
     }
 
     @Test
-    fun shouldDeclareObjectsInArrays() {
+    fun `should declare objects in arrays`() {
         val jsonString = json {
             "objects" [{
                 "key" to "value"
@@ -60,7 +60,7 @@ class JkobTest {
     }
 
     @Test
-    fun shouldEscapeValues() {
+    fun `should escape values`() {
         val jsonString = json {
             "objects" [{
                 "key" to """Company "Name""""
@@ -74,7 +74,7 @@ class JkobTest {
     }
 
     @Test
-    fun shouldBuildArraysAsPairs() {
+    fun `should build arrays as pairs`() {
         val json = json {
             "object" to {
                 "key" to "value"
@@ -87,7 +87,7 @@ class JkobTest {
     }
 
     @Test
-    fun shouldGetAsMap() {
+    fun `should get as map`() {
         val json = json {
             "object" to {
                 "key" to "value"

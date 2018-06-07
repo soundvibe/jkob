@@ -23,13 +23,7 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
                     .mapValues { it.value.toJson() })
             is Collection<*> -> JsArray(value.map { it.toJson() })
             is Enum<*> -> StringSerializer.serialize(value.name)
-            else -> {
-                JsObject(kClass.memberProperties
-                        .associateBy( { it.name }, {
-                            @Suppress("UNCHECKED_CAST")
-                            (it as KProperty1<Any, Any>).get(value).toJson()
-                        }))
-            }
+            else -> serializeClass(value, kClass)
         }
     }
 
@@ -63,6 +57,18 @@ object ObjectSerializer: Serializer<Any>, DeSerializer<JsonValue,Any> {
         returnClass.isCompanion -> returnClass.companionObjectInstance
         returnClass.isSubclassOf(Map::class) -> value.elements.mapValues { deserializeValue(it.value) }
         else -> deserializeClass(value, returnClass)
+    }
+
+    private fun serializeClass(value: Any, kClass: KClass<*>): JsObject {
+        val fields = kClass.memberProperties
+                .associateBy( { it.name }, {
+                    @Suppress("UNCHECKED_CAST")
+                    (it as KProperty1<Any, Any>).get(value).toJson()
+                })
+        return JsObject(
+                if (kClass.isSealed())
+                    fields + ((kClass.sealedPropertyName()?:"className") to JsString(kClass.simpleName ?: ""))
+                else fields);
     }
 
     private fun deserializeClass(value: JsObject, returnClass: KClass<*>): Any? {
